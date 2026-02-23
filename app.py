@@ -6,7 +6,7 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="좌석 배치~~", layout="wide")
 
-# [디자인] 진섭 님의 설정을 유지하되, 높이 규격만 45px로 통일 (사용자 코드 보존)
+# [디자인] 진섭 님의 설정을 100% 유지
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
@@ -14,7 +14,7 @@ st.markdown("""
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
 
     .stButton > button {
-        width: 150% !important; /* 진섭 님의 설정 유지 (옆 칸 침범 주의) */
+        width: 150% !important; 
         height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
@@ -57,15 +57,17 @@ def get_clean_data():
 
 df = get_clean_data()
 
-# [추가] 이선좌 상태 관리 변수 초기화
+# [추가] 상태 관리 변수 초기화
 if 'occupied_error' not in st.session_state:
     st.session_state.occupied_error = False
+if 'change_mode' not in st.session_state:
+    st.session_state.change_mode = False
 
-# 3. 사이드바 - 인증 및 예약 취소
+# 3. 사이드바 - 인증 및 예약 취소/변경
 user_name = st.sidebar.text_input("이름 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
-# 이선좌 알림창 표시 로직
+# 이선좌 알림창
 if st.session_state.occupied_error:
     st.error("🎟️ 이선좌! 이미 선택된 좌석입니다. 새로고침 후 다시 시도하세요.")
     if st.button("알림 닫기 ✖️"):
@@ -74,17 +76,33 @@ if st.session_state.occupied_error:
 
 if st.sidebar.button("🔄 실시간 현황 새로고침"):
     st.session_state.occupied_error = False
+    st.session_state.change_mode = False
     st.rerun()
 
-# 예약 취소 로직
+# 배정 확인 및 취소/변경 로직
 my_seat_row = df[df['owner'] == user_name]
-if not my_seat_row.empty and user_name != "":
+has_seat = not my_seat_row.empty and user_name != ""
+
+if has_seat:
     my_seat = my_seat_row['seat_no'].values[0]
     st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
-    if st.sidebar.button("❌ 배정 취소하기"):
-        with st.spinner('취소 중...'):
+    
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        if st.button("❌ 배정 취소", use_container_width=True):
             requests.get(GAS_URL, params={"owner": user_name})
+            st.session_state.change_mode = False
             st.rerun()
+    with col2:
+        if st.button("🔄 좌석 변경", use_container_width=True):
+            st.session_state.change_mode = True
+            st.rerun()
+    
+    if st.session_state.change_mode:
+        st.sidebar.info("💡 변경할 새 좌석을 선택하세요.")
+else:
+    # 아직 좌석이 없는 경우엔 변경 모드 상시 활성화
+    st.session_state.change_mode = True
 
 # 4. 강의실 레이아웃 시각화
 st.markdown("<div class='yellow-box monitor'>모니터 (정면)</div>", unsafe_allow_html=True)
@@ -92,7 +110,7 @@ c_l, c_s, c_r = st.columns([6, 0.5, 6])
 with c_r: st.markdown("<div class='yellow-box desk'>👨‍🏫<br>교수님 교탁</div>", unsafe_allow_html=True)
 st.write("")
 
-# 5. 좌석 배치 (도면 일치 로직)
+# 5. 좌석 배치
 for r in range(6):
     cols = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
     for c in range(6):
@@ -112,16 +130,19 @@ for r in range(6):
             with column:
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 if not owner or owner == "":
-                    if st.button(f"{idx}", key=f"{key_p}_{idx}"):
+                    # 좌석 변경 모드일 때만 빈자리 버튼 활성화
+                    is_disabled = not st.session_state.change_mode
+                    if st.button(f"{idx}", key=f"{key_p}_{idx}", disabled=is_disabled):
                         if not user_name: st.sidebar.error("이름!")
                         else:
-                            st.session_state.occupied_error = False # 에러 상태 초기화
+                            st.session_state.occupied_error = False
                             res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
                             if res.text == "Occupied":
-                                st.session_state.occupied_error = True # 이선좌 발생 시 플래그 세움
+                                st.session_state.occupied_error = True
                             else:
+                                st.session_state.change_mode = False # 변경 성공 시 모드 해제
                                 st.balloons()
-                            st.rerun() # 새로고침해서 상단에 에러 노출
+                            st.rerun()
                 else:
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
