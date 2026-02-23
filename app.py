@@ -25,7 +25,7 @@ st.markdown("""
     
     /* 버튼 디자인: 와이드 직사각형 비율 유지 */
     .stButton > button {
-        width: 250% !important;    /* 중앙에 오는 느낌을 주려고 너비를 살짝 줄였습니다(92%) */
+        width: 300% !important;    /* 중앙에 오는 느낌을 주려고 너비를 살짝 줄였습니다(92%) */
         height: 22px !important;  /* 진섭 님이 선택한 와이드한 높이 */
         padding: 0px !important;
         font-size: 8px !important;
@@ -90,7 +90,7 @@ st.write("")
 
 # 5. 좌석 배치 로직
 for r in range(6):
-    cols = st.columns([1,1,1,1,1,1, 0.3, 1,1,1,1,1,1])
+    cols = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
     for c in range(6):
         l_idx = str((r * 12) + c + 1)
         r_idx = str((r * 12) + c + 7)
