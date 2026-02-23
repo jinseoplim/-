@@ -4,14 +4,22 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="즐거운 좌석 배치~~", layout="wide")
+st.set_page_config(page_title="좌석 배치~~", layout="wide")
 
-# [디자인] 진섭 님의 설정을 100% 유지 (45px 높이 고정)
+# [디자인] 기존 설정 유지 및 타이틀 중앙 정렬 CSS 추가
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
     [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 1px !important; }
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
+
+    /* 타이틀 중앙 정렬 */
+    .centered-title {
+        text-align: center;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
 
     .stButton > button {
         width: 150% !important; 
@@ -42,7 +50,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("즐거운 좌석 배치~~")
+# [수정] 타이틀 중앙 정렬 적용
+st.markdown("<h1 class='centered-title'>즐거운 좌석 배치~~</h1>", unsafe_allow_html=True)
 
 # 2. 데이터 로드 및 nan 박멸
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
@@ -76,14 +85,13 @@ if st.sidebar.button("🔄 실시간 현황 새로고침"):
     st.session_state.occupied_error = False
     st.rerun()
 
-# [수정] 배정 확인 및 안내 문구만 노출
+# 배정 확인 및 안내 문구 노출
 my_seat_row = df[df['owner'] == user_name]
 has_seat = not my_seat_row.empty and user_name != ""
 
 if has_seat:
     my_seat = my_seat_row['seat_no'].values[0]
     st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
-    # 버튼 없이 안내 문구만 유지
     st.sidebar.info("💡 이동할 새 좌석을 선택하세요.")
 else:
     if user_name != "":
@@ -115,7 +123,6 @@ for r in range(6):
             with column:
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 if not owner or owner == "":
-                    # [수정] 버튼 클릭 잠금 해제: 빈자리는 항상 클릭 가능
                     if st.button(f"{idx}", key=f"{key_p}_{idx}"):
                         if not user_name: st.sidebar.error("이름부터 입력하세요!")
                         else:
@@ -127,7 +134,6 @@ for r in range(6):
                                 st.balloons()
                             st.rerun()
                 else:
-                    # 예약된 자리는 초록색으로 표시
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
         draw_seat(cols[c], l_idx, "L")
