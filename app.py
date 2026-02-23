@@ -6,17 +6,16 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="좌석 배치~~", layout="wide")
 
-# [디자인] 모든 버튼의 규격을 45px 높이로 고정하고 중앙 정렬
+# [디자인] 진섭 님의 설정을 유지하되, 높이 규격만 45px로 통일 (사용자 코드 보존)
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
     [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 1px !important; }
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
 
-    /* 모든 버튼 규격 통일: 이름이 있든 없든 무조건 똑같은 직사각형 */
     .stButton > button {
-        width: 150% !important;
-        height: 40px !important; 
+        width: 150% !important; /* 진섭 님의 설정 유지 (옆 칸 침범 주의) */
+        height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
         display: flex !important;
@@ -30,7 +29,6 @@ st.markdown("""
         border: 1px solid #444 !important;
     }
 
-    /* 예약된 초록색 칸 */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
@@ -59,21 +57,32 @@ def get_clean_data():
 
 df = get_clean_data()
 
-# 3. 사이드바 - 인증 및 예약 취소 (부활!)
+# [추가] 이선좌 상태 관리 변수 초기화
+if 'occupied_error' not in st.session_state:
+    st.session_state.occupied_error = False
+
+# 3. 사이드바 - 인증 및 예약 취소
 user_name = st.sidebar.text_input("이름 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
+# 이선좌 알림창 표시 로직
+if st.session_state.occupied_error:
+    st.error("🎟️ 이선좌! 이미 선택된 좌석입니다. 새로고침 후 다시 시도하세요.")
+    if st.button("알림 닫기 ✖️"):
+        st.session_state.occupied_error = False
+        st.rerun()
+
 if st.sidebar.button("🔄 실시간 현황 새로고침"):
+    st.session_state.occupied_error = False
     st.rerun()
 
-# [핵심] 예약 취소 로직
+# 예약 취소 로직
 my_seat_row = df[df['owner'] == user_name]
 if not my_seat_row.empty and user_name != "":
     my_seat = my_seat_row['seat_no'].values[0]
     st.sidebar.success(f"✅ {my_seat}번 배정")
     if st.sidebar.button("❌ 배정 취소하기"):
         with st.spinner('취소 중...'):
-            # GAS에 owner 정보만 보내서 해당 사용자의 데이터를 지웁니다.
             requests.get(GAS_URL, params={"owner": user_name})
             st.rerun()
 
@@ -89,7 +98,7 @@ for r in range(6):
     for c in range(6):
         if r == 0:
             l_idx = str(c + 1)
-            r_idx = "X" # 1열 우측 ❌
+            r_idx = "X" 
         else:
             l_idx = str((r-1)*12 + 7 + c)
             r_idx = str((r-1)*12 + 13 + c)
@@ -106,10 +115,13 @@ for r in range(6):
                     if st.button(f"{idx}", key=f"{key_p}_{idx}"):
                         if not user_name: st.sidebar.error("이름!")
                         else:
+                            st.session_state.occupied_error = False # 에러 상태 초기화
                             res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
-                            if res.text == "Occupied": st.error("🎟️ 이선좌! 이미 선택된 좌석입니다.")
-                            else: st.balloons()
-                            st.rerun()
+                            if res.text == "Occupied":
+                                st.session_state.occupied_error = True # 이선좌 발생 시 플래그 세움
+                            else:
+                                st.balloons()
+                            st.rerun() # 새로고침해서 상단에 에러 노출
                 else:
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
