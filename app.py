@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="수의대 자리 티켓팅", layout="wide")
+st.set_page_config(page_title="좌석 배치~~", layout="wide")
 
 # [디자인] 모든 버튼의 규격을 45px 높이로 고정하고 중앙 정렬
 st.markdown("""
@@ -44,7 +44,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🏥 수의과대학 2학년 자리 배치")
+st.title("즐거운 좌석 배치~~")
 
 # 2. 데이터 로드 및 nan 박멸
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
@@ -60,7 +60,7 @@ def get_clean_data():
 df = get_clean_data()
 
 # 3. 사이드바 - 인증 및 예약 취소 (부활!)
-user_name = st.sidebar.text_input("성함 입력", placeholder="예: 임진섭")
+user_name = st.sidebar.text_input("이름 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
 if st.sidebar.button("🔄 실시간 현황 새로고침"):
@@ -70,8 +70,8 @@ if st.sidebar.button("🔄 실시간 현황 새로고침"):
 my_seat_row = df[df['owner'] == user_name]
 if not my_seat_row.empty and user_name != "":
     my_seat = my_seat_row['seat_no'].values[0]
-    st.sidebar.success(f"✅ {my_seat}번 사용 중")
-    if st.sidebar.button("❌ 내 예약 취소하기"):
+    st.sidebar.success(f"✅ {my_seat}번 배정")
+    if st.sidebar.button("❌ 배정 취소하기"):
         with st.spinner('취소 중...'):
             # GAS에 owner 정보만 보내서 해당 사용자의 데이터를 지웁니다.
             requests.get(GAS_URL, params={"owner": user_name})
@@ -107,7 +107,7 @@ for r in range(6):
                         if not user_name: st.sidebar.error("이름!")
                         else:
                             res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
-                            if res.text == "Occupied": st.error("🎟️ 이선좌!")
+                            if res.text == "Occupied": st.error("🎟️ 이선좌! 이미 선택된 좌석입니다.")
                             else: st.balloons()
                             st.rerun()
                 else:
