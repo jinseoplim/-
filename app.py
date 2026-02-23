@@ -85,7 +85,7 @@ st.write("")
 
 # 5. 좌석 배치 (도면 일치 로직)
 for r in range(6):
-    cols = st.columns([1,1,1,1,1,1, 0.6, 1,1,1,1,1,1])
+    cols = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
     for c in range(6):
         if r == 0:
             l_idx = str(c + 1)
