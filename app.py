@@ -66,7 +66,7 @@ df = get_data()
 
 # 3. 사이드바 설정
 user_name = st.sidebar.text_input("성함 입력", placeholder="예: 임진섭")
-GAS_URL = "여기에_앱스_스크립트_URL_붙여넣기"
+GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
 if st.sidebar.button("🔄 좌석 현황 새로고침"):
     st.rerun()
