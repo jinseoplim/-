@@ -28,7 +28,7 @@ st.markdown("""
     /* 3. 좌석 버튼: 높이를 낮게(28px) 설정하여 가로로 긴 직사각형 비율 강제 */
     .stButton > button {
         width: 100% !important;
-        height: 28px !important; 
+        height: 20px !important; 
         padding: 0px !important;
         font-size: 9px !important; 
         font-weight: 700 !important;
@@ -103,7 +103,7 @@ st.write("")
 # 5. 좌석 배치 (1~66번)
 for r in range(6):
     # 중앙 통로(0.2) 외 모든 간격을 제로화하여 버튼 가로폭을 극대화
-    cols = st.columns([1,1,1,1,1,1, 0.2, 1,1,1,1,1,1])
+    cols = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
     for c in range(6):
         l_idx = str((r * 12) + c + 1)
         r_idx = str((r * 12) + c + 7)
