@@ -6,7 +6,7 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="좌석 배치~~", layout="wide")
 
-# [디자인] 진섭 님의 설정을 100% 유지
+# [디자인] 진섭 님의 기존 설정을 100% 유지
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
@@ -57,13 +57,13 @@ def get_clean_data():
 
 df = get_clean_data()
 
-# [추가] 상태 관리 변수 초기화
+# 상태 관리 변수 초기화
 if 'occupied_error' not in st.session_state:
     st.session_state.occupied_error = False
 if 'change_mode' not in st.session_state:
     st.session_state.change_mode = False
 
-# 3. 사이드바 - 인증 및 예약 취소/변경
+# 3. 사이드바 - 인증 및 변경 모드
 user_name = st.sidebar.text_input("이름 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
@@ -79,7 +79,7 @@ if st.sidebar.button("🔄 실시간 현황 새로고침"):
     st.session_state.change_mode = False
     st.rerun()
 
-# 배정 확인 및 취소/변경 로직
+# 배정 확인 및 변경 로직 (취소 기능 삭제됨)
 my_seat_row = df[df['owner'] == user_name]
 has_seat = not my_seat_row.empty and user_name != ""
 
@@ -87,19 +87,13 @@ if has_seat:
     my_seat = my_seat_row['seat_no'].values[0]
     st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
     
-    col1, col2 = st.sidebar.columns(2)
-    with col1:
-        if st.button("❌ 배정 취소", use_container_width=True):
-            requests.get(GAS_URL, params={"owner": user_name})
-            st.session_state.change_mode = False
-            st.rerun()
-    with col2:
-        if st.button("🔄 좌석 변경", use_container_width=True):
-            st.session_state.change_mode = True
-            st.rerun()
+    # 배정 취소 버튼을 없애고 변경 버튼만 크게 배치
+    if st.sidebar.button("🔄 좌석 변경하기", use_container_width=True):
+        st.session_state.change_mode = True
+        st.rerun()
     
     if st.session_state.change_mode:
-        st.sidebar.info("💡 변경할 새 좌석을 선택하세요.")
+        st.sidebar.info("💡 이동할 새 좌석을 선택하세요.")
 else:
     # 아직 좌석이 없는 경우엔 변경 모드 상시 활성화
     st.session_state.change_mode = True
@@ -130,7 +124,7 @@ for r in range(6):
             with column:
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 if not owner or owner == "":
-                    # 좌석 변경 모드일 때만 빈자리 버튼 활성화
+                    # 변경 모드일 때만 빈자리 버튼 클릭 가능
                     is_disabled = not st.session_state.change_mode
                     if st.button(f"{idx}", key=f"{key_p}_{idx}", disabled=is_disabled):
                         if not user_name: st.sidebar.error("이름!")
@@ -144,6 +138,7 @@ for r in range(6):
                                 st.balloons()
                             st.rerun()
                 else:
+                    # 이미 예약된 자리는 비활성화 (본인 자리 포함)
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
         draw_seat(cols[c], l_idx, "L")
