@@ -10,10 +10,19 @@ st.set_page_config(page_title="자리 배치 티켓팅!!!", layout="wide")
 # CSS 디자인 (모니터, 교탁, 출입문 위치 완벽 재현)
 st.markdown("""
     <style>
-    .monitor-box { text-align: center; background-color: #fceea7; padding: 10px; color: black; font-weight: bold; font-size: 22px; border: 2px solid #000; width: 50%; margin: 0 auto 20px auto; }
-    .desk-box { text-align: center; background-color: #fceea7; padding: 8px; color: black; font-weight: bold; border: 2px solid #000; width: 150px; margin-left: auto; }
-    .door-box { text-align: center; background-color: #fceea7; padding: 15px; color: black; font-weight: bold; border: 2px solid #000; width: 100px; }
-    .stButton>button { width: 100%; height: 55px; font-weight: bold; font-size: 17px; }
+    /* ... 기존 스타일들 ... */
+
+    /* 예약 완료된(Primary) 버튼을 초록색으로 강제 지정 */
+    div.stButton > button[kind="primary"] {
+        background-color: #28a745 !important;  /* 진한 초록색 */
+        color: white !important;
+        border: none;
+    }
+    /* 마우스를 올렸을 때 색상 (약간 더 진하게) */
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #218838 !important;
+        border: none;
+    }
     </style>
     """, unsafe_allow_html=True)
 
