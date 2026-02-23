@@ -5,7 +5,7 @@ import requests
 import time
 
 # 1. 페이지 설정
-st.set_page_config(page_title="수의대 자리 티켓팅", layout="wide")
+st.set_page_config(page_title="즐거운 자리 배치~~", layout="wide")
 
 # CSS 디자인 (모니터, 교탁, 출입문 위치 완벽 재현)
 st.markdown("""
@@ -17,7 +17,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🏥 수의과대학 2학년 강의실 자리 배치 시스템")
+st.title("즐거운 자리 배치~~")
 
 # 2. 구글 시트 데이터 불러오기 (초고속 로딩 설정)
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
@@ -30,8 +30,8 @@ def get_data():
 df = get_data()
 
 # 3. 사이드바 - 본인 인증
-st.sidebar.header("📋 본인 인증")
-user_name = st.sidebar.text_input("성함을 입력하세요", placeholder="예: 임진섭")
+st.sidebar.header("📋 로그인")
+user_name = st.sidebar.text_input("이름을 입력하세요", placeholder="예: 임진섭")
 # [주의] 이 주소는 아까 '앱스 스크립트' 배포해서 받은 URL을 넣으셔야 합니다!
 GAS_URL = "https://script.google.com/macros/s/AKfycbwROH8eMtG2zg3420yofFYuZ0M0uQ7vOckzkCNLwKtq7yEhsZxPpVLYOWuONKs4d0WptQ/exec"
 
@@ -40,8 +40,8 @@ my_seat_data = df[df['owner'] == user_name]
 my_seat = my_seat_data['seat_no'].values[0] if not my_seat_data.empty else None
 
 if my_seat:
-    st.sidebar.success(f"✅ 현재 {my_seat}번 좌석 예약 중")
-    if st.sidebar.button("❌ 예약 취소하기"):
+    st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
+    if st.sidebar.button("❌ 배정 취소하기"):
         requests.get(GAS_URL, params={"owner": user_name})
         st.cache_data.clear()
         st.rerun()
@@ -69,10 +69,10 @@ for r in range(6):
                     if st.button(f"{idx}", key=f"s_{idx}"):
                         if not user_name: st.sidebar.error("⚠️ 이름을 입력하세요!")
                         else:
-                            with st.spinner('좌석 확보 중...'):
+                            with st.spinner('좌석 배정 중...'):
                                 res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
                                 if res.text == "Occupied":
-                                    st.error("이미 선택된 좌석입니다.")
+                                    st.error("이미 선택된 좌석입니다. 이선좌~~~")
                                     time.sleep(1)
                                 else:
                                     st.cache_data.clear()
