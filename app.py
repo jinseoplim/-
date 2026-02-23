@@ -2,106 +2,84 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import requests
-import time
 
 # 1. 페이지 설정
-st.set_page_config(page_title="자리 배치 티켓팅!!!", layout="wide")
+st.set_page_config(page_title="자리 배치~~", layout="wide")
 
-# CSS 디자인 (모니터, 교탁, 출입문 위치 완벽 재현)
+# 모바일 가로 배열 유지 및 초록색 버튼 CSS
 st.markdown("""
     <style>
-    /* ... 기존 스타일들 ... */
-
-    /* 예약 완료된(Primary) 버튼을 초록색으로 강제 지정 */
-    div.stButton > button[kind="primary"] {
-        background-color: #28a745 !important;  /* 진한 초록색 */
-        color: white !important;
-        border: none;
-    }
-    /* 마우스를 올렸을 때 색상 (약간 더 진하게) */
-    div.stButton > button[kind="primary"]:hover {
-        background-color: #218838 !important;
-        border: none;
-    }
+    [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; }
+    .stButton > button { width: 100% !important; height: 45px !important; font-size: 12px !important; padding: 0px !important; }
+    div.stButton > button[kind="primary"] { background-color: #28a745 !important; color: white !important; border: none; }
+    .monitor-box { text-align: center; background-color: #fceea7; padding: 10px; font-weight: bold; border: 1px solid #000; margin-bottom: 15px; }
+    .desk-box { text-align: center; background-color: #fceea7; padding: 5px; font-size: 12px; border: 1px solid #000; width: 70px; margin-left: auto; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("즐거운 자리 배치~~")
-
-# 2. 구글 시트 데이터 불러오기 (초고속 로딩 설정)
+# 2. 구글 시트 연결
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-@st.cache_data(ttl=5) # 5초마다 데이터 갱신 (50명 동시 접속 대비 최적화)
-def get_data():
-    return conn.read(spreadsheet=url, usecols=[0, 1])
+# 데이터 로드 (캐시 없이 실시간 반영)
+def get_live_data():
+    st.cache_data.clear()
+    _df = conn.read(spreadsheet=url, usecols=[0, 1], ttl=0)
+    _df['seat_no'] = pd.to_numeric(_df['seat_no'], errors='coerce')
+    return _df
 
-df = get_data()
+df = get_live_data()
 
-# 3. 사이드바 - 본인 인증
+# 3. 사이드바 설정
 st.sidebar.header("📋 로그인")
 user_name = st.sidebar.text_input("이름을 입력하세요", placeholder="예: 임진섭")
-# [주의] 이 주소는 아까 '앱스 스크립트' 배포해서 받은 URL을 넣으셔야 합니다!
-GAS_URL = "https://script.google.com/macros/s/AKfycbwROH8eMtG2zg3420yofFYuZ0M0uQ7vOckzkCNLwKtq7yEhsZxPpVLYOWuONKs4d0WptQ/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
-# 내 자리 확인 및 취소 기능
-my_seat_data = df[df['owner'] == user_name]
-my_seat = my_seat_data['seat_no'].values[0] if not my_seat_data.empty else None
+if 'err' not in st.session_state: st.session_state.err = False
 
+# 이선좌 알림창
+if st.session_state.err:
+    if st.error("🎟️ 이선좌 이선좌!! 이미 선택된 좌석입니다!"):
+        if st.button("알림 닫기"):
+            st.session_state.err = False
+            st.rerun()
+
+# 내 자리 확인 및 취소
+my_seat = df[df['owner'] == user_name]['seat_no'].values[0] if user_name in df['owner'].values else None
 if my_seat:
-    st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
-    if st.sidebar.button("❌ 배정 취소하기"):
+    st.sidebar.success(f"✅ {int(my_seat)}번 예약 중")
+    if st.sidebar.button("예약 취소"):
         requests.get(GAS_URL, params={"owner": user_name})
-        st.cache_data.clear()
         st.rerun()
 
-# 4. 강의실 레이아웃 시각화
-st.markdown("<div class='monitor-box'>모니터</div>", unsafe_allow_html=True)
-col_l, col_s, col_r = st.columns([6, 0.5, 6])
-with col_r: st.markdown("<div class='desk-box'>교탁</div>", unsafe_allow_html=True)
-st.write("<br>", unsafe_allow_html=True)
+# 4. 강의실 레이아웃 (1~66번)
+st.markdown("<div class='monitor-box'>모니터 (강의실 정면)</div>", unsafe_allow_html=True)
+c1, c2, c3 = st.columns([6, 0.5, 6])
+with c3: st.markdown("<div class='desk-box'>교탁</div>", unsafe_allow_html=True)
 
-# 5. 좌석 배치 로직 (1~6행)
 for r in range(6):
-    row_cols = st.columns([1,1,1,1,1,1, 0.5, 1,1,1,1,1,1])
+    cols = st.columns([1,1,1,1,1,1, 0.2, 1,1,1,1,1,1])
     for c in range(6):
         l_idx = (r * 12) + c + 1
         r_idx = (r * 12) + c + 7
         
-        # 좌석 버튼 생성 함수
-        def draw_seat(col, idx):
-            with col:
+        def draw_btn(column, idx):
+            if idx > 66: return
+            with column:
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
-                
                 if pd.isna(owner) or owner == "":
-                    # 빈자리 클릭 시 예약 진행
-                    if st.button(f"{idx}", key=f"s_{idx}"):
-                        if not user_name: st.sidebar.error("⚠️ 이름을 입력하세요!")
+                    if st.button(f"{idx}", key=f"s{idx}"):
+                        if not user_name: st.sidebar.error("이름 입력!")
                         else:
-                            with st.spinner('좌석 배정 중...'):
-                                res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
-                                if res.text == "Occupied":
-                                    st.error("이미 선택된 좌석입니다. 이선좌~~~")
-                                    time.sleep(1)
-                                else:
-                                    st.cache_data.clear()
-                                    st.balloons()
-                                st.rerun()
-                elif owner == user_name:
-                    # 내 자리는 파란색 강조
-                    st.button(f"{owner}", key=f"s_{idx}", type="primary")
+                            res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
+                            st.session_state.err = (res.text == "Occupied")
+                            if not st.session_state.err: st.balloons()
+                            st.rerun()
                 else:
-                    # 남의 자리는 비활성화
-                    st.button(f"{owner}", key=f"s_{idx}", disabled=True)
+                    st.button(f"{owner[:2]}", key=f"s{idx}", type="primary", disabled=(owner != user_name))
 
-        draw_seat(row_cols[c], l_idx)
+        draw_btn(cols[c], l_idx)
         if r == 0:
-            with row_cols[c+7]: st.button("❌", key=f"x_{c}", disabled=True)
+            with cols[c+7]: st.button("❌", key=f"x{c}", disabled=True)
         else:
-            draw_seat(row_cols[c+7], r_idx)
-
-# 하단 출입문 표시
-st.write("<br>", unsafe_allow_html=True)
-d1, d2, d3 = st.columns([1, 10, 1])
-with d1: st.markdown("<div class='door-box'>출입문</div>", unsafe_allow_html=True)
-with d3: st.markdown("<div class='door-box'>출입문</div>", unsafe_allow_html=True)
+            draw_btn(cols[c+7], r_idx)
