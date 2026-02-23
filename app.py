@@ -28,7 +28,7 @@ st.markdown("""
     
     /* 4. 버튼: 가로를 100% 채우고 높이를 낮춰서 와이드 비율 확보 */
     .stButton > button {
-        width: 100% !important; 
+        width: 200% !important; 
         height: 24px !important; /* 높이가 낮을수록 가로로 더 넓어 보입니다 */
         margin: 0px !important;
         padding: 0px !important;
@@ -91,7 +91,7 @@ st.write("")
 # 5. 좌석 배치 (1~66번)
 for r in range(6):
     # 중앙 복도(0.2)를 제외한 모든 간격을 CSS로 완전히 없앴습니다.
-    cols = st.columns([1,1,1,1,1,1, 0.2, 1,1,1,1,1,1])
+    cols = st.columns([1,1,1,1,1,1, 0.7, 1,1,1,1,1,1])
     for c in range(6):
         l_idx = str((r * 12) + c + 1)
         r_idx = str((r * 12) + c + 7)
