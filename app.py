@@ -29,7 +29,7 @@ user_name = st.sidebar.text_input("성함을 입력하세요", placeholder="예:
 
 # 4. 아까 복사한 '웹 앱 URL'을 여기에 입력하세요 (중요!)
 # "https://script.google.com/macros/s/..." 처럼 생긴 주소입니다.
-GAS_URL = "여기에_아까_복사한_웹_앱_URL을_붙여넣으세요"
+GAS_URL = "https://script.google.com/macros/s/AKfycbyOKdbyyjAuUPB3THtIWahqDeAOC3slBDBZpyGy5suTJq5B-Cw2QH1GjdSPzl1cmpqN5g/exec"
 
 # (모니터, 교탁 배치 로직)
 st.markdown("<div class='monitor-box'>모니터</div>", unsafe_allow_html=True)
