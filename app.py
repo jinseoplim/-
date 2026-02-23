@@ -4,20 +4,21 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="수의대 자리 티켓팅", layout="wide")
+st.set_page_config(page_title="강의실 자리 배치", layout="wide")
 
 # [디자인] 모든 버튼의 규격을 '초록 네모'와 100% 일치시키는 CSS
 st.markdown("""
     <style>
-    /* 전체 여백 및 간격 제로화 */
+    /* 1. 전체 여백 및 간격 제로화 (좌석 가로폭 확보) */
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.05rem !important; }
-    [data-testid="stHorizontalBlock"] { gap: 0px !important; flex-wrap: nowrap !important; }
-    [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px 0.5px !important; }
+    [data-testid="stHorizontalBlock"] { gap: 1px !important; flex-wrap: nowrap !important; }
+    [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px 0.2px !important; }
 
-    /* [핵심] 번호/이름 상관없이 모든 버튼의 크기를 강제로 고정 */
+    /* 2. [핵심] 모든 버튼의 사이즈를 강제로 고정 */
+    /* 숫자가 써있든 이름이 써있든 이 규격(width: 100%, height: 28px)을 무조건 따릅니다 */
     .stButton > button {
-        width: 100% !important;   /* 칸의 너비를 꽉 채움 */
-        height: 24px !important;  /* 높이를 낮게 고정해서 '옆으로 넓은' 직사각형 유지 */
+        width: 100% !important;   /* 칸의 가로를 꽉 채움 */
+        height: 28px !important;  /* 높이를 낮게 고정하여 '옆으로 넓은' 직사각형 생성 */
         
         display: flex !important;
         align-items: center !important;
@@ -31,9 +32,13 @@ st.markdown("""
         letter-spacing: -0.8px !important;
         border-radius: 1px !important;
         border: 0.5px solid #444 !important;
+        
+        /* 내용이 길어도 박스 크기가 변하지 않도록 고정 */
+        overflow: hidden !important;
+        text-overflow: clip !important;
     }
 
-    /* 예약 완료 버튼 (색상만 초록색으로 변경, 크기는 위와 동일) */
+    /* 3. 예약 완료 버튼 (색상만 초록색으로 변경, 크기는 위와 동일하게 유지) */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
@@ -48,7 +53,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🏥 수의과대학 2학년 자리 배치")
+st.title("🏥 강의실 자리 배치 시스템")
 
 # 2. 데이터 로드 (nan 박멸 및 실시간 반영)
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
@@ -57,19 +62,25 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 def get_data():
     st.cache_data.clear()
     _df = conn.read(spreadsheet=url, usecols=[0, 1], ttl=0)
-    _df = _df.fillna("").replace("nan", "") # 흉측한 nan 완전 제거
+    # 이미지에서 보이던 'nan' 글자를 완전히 지웁니다.
+    _df = _df.fillna("").replace("nan", "")
     _df['seat_no'] = _df['seat_no'].astype(str).str.strip()
     return _df
 
 df = get_data()
 
-# 3. 사이드바 관리
+# 3. 사이드바 및 상태 관리
+if 'occupied_error' not in st.session_state: st.session_state.occupied_error = False
 user_name = st.sidebar.text_input("성함 입력", placeholder="예: 이름")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
-if st.sidebar.button("🔄 좌석 현황 새로고침"): st.rerun()
+if st.session_state.occupied_error:
+    st.error("🎟️ 이미 선택된 좌석입니다! (이선좌)")
+    if st.button("알림 닫기 ✖️"):
+        st.session_state.occupied_error = False
+        st.rerun()
 
-# 4. 강의실 레이아웃
+# 4. 레이아웃 시각화 (모니터 및 교탁)
 st.markdown("<div class='yellow-box monitor'>모니터</div>", unsafe_allow_html=True)
 c_l, c_s, c_r = st.columns([6, 0.2, 6])
 with c_r: st.markdown("<div class='yellow-box desk'>👨‍🏫<br>교수님 교탁</div>", unsafe_allow_html=True)
@@ -87,16 +98,18 @@ for r in range(6):
             with column:
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 
-                # 빈자리든 예약석이든 .stButton > button 설정에 따라 동일한 규격으로 생성됨
+                # [수정] 빈자리든 예약석이든 상단 CSS 설정(.stButton > button)에 따라 동일한 규격으로 생성됨
                 if not owner or owner == "":
                     if st.button(f"{idx}", key=f"{key_p}_{idx}"):
                         if not user_name: st.sidebar.error("이름!")
                         else:
+                            st.session_state.occupied_error = False
                             res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
-                            if res.text == "Occupied": st.error("이선좌!")
+                            if res.text == "Occupied": st.session_state.occupied_error = True
                             else: st.balloons()
                             st.rerun()
                 else:
+                    # 예약 완료 (이름 전체 표시, 크기는 숫자 버튼과 동일하게 유지)
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
         draw_seat(cols[c], l_idx, "L")
