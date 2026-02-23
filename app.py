@@ -27,7 +27,7 @@ st.markdown("""
     
     /* 3. 좌석 버튼: 높이를 낮게(28px) 설정하여 가로로 긴 직사각형 비율 강제 */
     .stButton > button {
-        width: 1000% !important;
+        width: 200% !important;
         height: 20px !important; 
         padding: 0px !important;
         font-size: 9px !important; 
