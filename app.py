@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="좌석 배치~~", layout="wide")
+st.set_page_config(page_title="자리 배치~~", layout="wide")
 
 # [디자인] 기존 설정 유지 및 타이틀 중앙 정렬 CSS 추가
 st.markdown("""
@@ -51,7 +51,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # [수정] 타이틀 중앙 정렬 적용
-st.markdown("<h1 class='centered-title'>즐거운 좌석 배치~~</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='centered-title'>209호 즐거운 자리 배치~~</h1>", unsafe_allow_html=True)
 
 # 2. 데이터 로드 및 nan 박멸
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
@@ -92,7 +92,7 @@ has_seat = not my_seat_row.empty and user_name != ""
 if has_seat:
     my_seat = my_seat_row['seat_no'].values[0]
     st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
-    st.sidebar.info("💡 이동할 새 좌석을 선택하세요.")
+    st.sidebar.info("💡 좌석 변경을 원하실 경우 이동할 새 좌석을 선택하세요.")
 else:
     if user_name != "":
         st.sidebar.warning("📍 아직 배정된 좌석이 없습니다.")
@@ -124,7 +124,7 @@ for r in range(6):
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 if not owner or owner == "":
                     if st.button(f"{idx}", key=f"{key_p}_{idx}"):
-                        if not user_name: st.sidebar.error("이름부터 입력하세요!")
+                        if not user_name: st.sidebar.error("이름을 입력하세요!")
                         else:
                             st.session_state.occupied_error = False
                             res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
