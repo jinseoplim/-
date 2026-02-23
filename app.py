@@ -3,68 +3,67 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import requests
 
-# 1. 라이브러리 임포트 및 페이지 설정
+# 1. 페이지 설정
 st.set_page_config(page_title="수의대 자리 티켓팅", layout="wide")
 
-# [디자인] 모든 버튼을 '초록 네모'와 똑같은 사이즈로 고정하는 CSS
+# [핵심 디자인] 모든 버튼의 사이즈를 강제로 통일하는 CSS
 st.markdown("""
     <style>
-    /* 1. 전체 여백 제거 */
+    /* 전체 여백 최적화 */
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
-    [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 1px !important; }
-    [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
+    [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 2px !important; }
+    [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px 1px !important; }
 
-    /* 2. 모든 버튼(번호/이름 공통)을 초록 네모 사이즈로 고정 */
+    /* [중요] 모든 버튼(번호/이름 공통)의 규격을 초록 네모와 똑같이 고정 */
     .stButton > button {
-        width: 100% !important;   /* 칸 너비를 가득 채움 */
-        height: 35px !important;  /* [황금 비율] 초록 네모와 같은 널찍한 높이 */
+        width: 100% !important;   /* 칸 너비를 꽉 채움 */
+        height: 40px !important;  /* [핵심] 이 높이로 모든 버튼이 통일됩니다! */
+        
+        /* 내용물을 버튼 중앙에 예쁘게 정렬 */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
         
         padding: 0px !important;
-        font-size: 10px !important; 
+        font-size: 11px !important;
         font-weight: 700 !important;
-        
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        
-        border-radius: 4px !important; /* 약간의 라운드 처리 */
-        border: 1px solid #444 !important;
         white-space: nowrap !important;
-        letter-spacing: -0.5px !important;
+        
+        border-radius: 4px !important;
+        border: 1px solid #555 !important; /* 기본 테두리 */
     }
 
-    /* 3. 예약 완료 버튼 (초록 네모 색상 적용) */
+    /* 예약 완료 버튼 (초록색 색상만 적용, 사이즈는 위에서 고정됨) */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
         border: none !important;
-        /* 사이즈는 위에서 설정한 35px 높이가 그대로 적용됩니다 */
     }
 
-    /* 구조물 디자인 */
+    /* 노란색 구조물 디자인 */
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
-    .monitor { height: 30px; font-size: 14px; width: 80%; margin: 0 auto 15px auto; }
-    .desk { height: 40px; font-size: 11px; width: 110px; margin-left: auto; line-height: 1.2; margin-bottom: 10px; }
+    .monitor { height: 30px; font-size: 15px; width: 80%; margin: 0 auto 15px auto; }
+    .desk { height: 45px; font-size: 12px; width: 110px; margin-left: auto; line-height: 1.2; margin-bottom: 10px; }
     .door { height: 40px; font-size: 12px; width: 100%; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🏥 수의과대학 2학년 자리 배치")
 
-# 2. 데이터 로드 (nan 박멸 및 실시간 반영)
+# 2. 데이터 로드 (nan 박멸)
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-def get_clean_data():
+def get_data():
     st.cache_data.clear()
     _df = conn.read(spreadsheet=url, usecols=[0, 1], ttl=0)
-    _df = _df.fillna("").replace("nan", "") # 흉측한 nan 제거
+    _df = _df.fillna("").replace("nan", "") # nan 제거
     _df['seat_no'] = _df['seat_no'].astype(str).str.strip()
     return _df
 
-df = get_clean_data()
+df = get_data()
 
-# 3. 사이드바 관리
+# 3. 사이드바 및 상태 관리
 user_name = st.sidebar.text_input("성함 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
@@ -89,7 +88,7 @@ for r in range(6):
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 
                 # 빈자리든 예약석이든 동일한 사이즈의 버튼 생성
-                if not owner or owner == "":
+                if not owner:
                     if st.button(f"{idx}", key=f"{key_p}_{idx}"):
                         if not user_name: st.sidebar.error("이름!")
                         else:
@@ -98,7 +97,7 @@ for r in range(6):
                             else: st.balloons()
                             st.rerun()
                 else:
-                    # 예약 완료 (모든 칸 사이즈가 초록 네모와 동일하게 고정됨)
+                    # 예약 완료 (사이즈는 동일하고 색상만 초록색)
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
         draw_seat(cols[c], l_idx, "L")
