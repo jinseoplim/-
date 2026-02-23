@@ -15,8 +15,8 @@ st.markdown("""
 
     /* 모든 버튼 규격 통일: 이름이 있든 없든 무조건 똑같은 직사각형 */
     .stButton > button {
-        width: 100% !important;
-        height: 45px !important; 
+        width: 150% !important;
+        height: 40px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
         display: flex !important;
@@ -85,7 +85,7 @@ st.write("")
 
 # 5. 좌석 배치 (도면 일치 로직)
 for r in range(6):
-    cols = st.columns([1,1,1,1,1,1, 0.5, 1,1,1,1,1,1])
+    cols = st.columns([1,1,1,1,1,1, 0.6, 1,1,1,1,1,1])
     for c in range(6):
         if r == 0:
             l_idx = str(c + 1)
