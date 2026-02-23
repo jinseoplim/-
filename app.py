@@ -6,14 +6,13 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="즐거운 좌석 배치~~", layout="wide")
 
-# [디자인] 모든 버튼 규격 통일 및 사이드바 버튼 중앙 정렬 CSS
+# [디자인] 진섭 님의 설정을 100% 유지 (45px 높이 고정)
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
     [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 1px !important; }
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
 
-    /* 모든 좌석 버튼 규격 통일 (45px 높이 직사각형) */
     .stButton > button {
         width: 150% !important; 
         height: 45px !important; 
@@ -30,18 +29,6 @@ st.markdown("""
         border: 1px solid #444 !important;
     }
 
-    /* 사이드바 내부 버튼들 중앙 정렬 설정 */
-    [data-testid="stSidebar"] .stButton {
-        display: flex;
-        justify-content: center;
-    }
-    
-    /* 사이드바 '좌석 변경하기' 버튼 전용 (너비 조절 가능) */
-    [data-testid="stSidebar"] .stButton > button {
-        width: 80% !important; /* 중앙 정렬 느낌을 위해 너비를 80%로 설정 */
-    }
-
-    /* 예약된 초록색 칸 */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
@@ -73,10 +60,8 @@ df = get_clean_data()
 # 상태 관리 변수 초기화
 if 'occupied_error' not in st.session_state:
     st.session_state.occupied_error = False
-if 'change_mode' not in st.session_state:
-    st.session_state.change_mode = False
 
-# 3. 사이드바 - 인증 및 변경 모드
+# 3. 사이드바 - 인증 및 상태 안내
 user_name = st.sidebar.text_input("이름 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
@@ -89,29 +74,20 @@ if st.session_state.occupied_error:
 
 if st.sidebar.button("🔄 실시간 현황 새로고침"):
     st.session_state.occupied_error = False
-    st.session_state.change_mode = False
     st.rerun()
 
-# [핵심 로직] 배정 확인 및 변경 모드 제어
+# [수정] 배정 확인 및 안내 문구만 노출
 my_seat_row = df[df['owner'] == user_name]
 has_seat = not my_seat_row.empty and user_name != ""
 
 if has_seat:
     my_seat = my_seat_row['seat_no'].values[0]
     st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
-    
-    # 🎯 '좌석 변경하기' 버튼 (중앙 정렬됨)
-    if st.sidebar.button("🔄 좌석 변경하기"):
-        st.session_state.change_mode = True
-        st.rerun()
-    
-    if st.session_state.change_mode:
-        st.sidebar.info("💡 이동할 새 좌석을 선택하세요.")
-    else:
-        st.sidebar.warning("⚠️ 좌석을 변경하려면 위 버튼을 누르세요.")
+    # 버튼 없이 안내 문구만 유지
+    st.sidebar.info("💡 이동할 새 좌석을 선택하세요.")
 else:
-    # 아직 좌석이 없는 신규 배정자는 버튼 누를 필요 없이 바로 선택 가능
-    st.session_state.change_mode = True
+    if user_name != "":
+        st.sidebar.warning("📍 아직 배정된 좌석이 없습니다.")
 
 # 4. 강의실 레이아웃 시각화
 st.markdown("<div class='yellow-box monitor'>모니터 (정면)</div>", unsafe_allow_html=True)
@@ -139,21 +115,19 @@ for r in range(6):
             with column:
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 if not owner or owner == "":
-                    # 🔒 좌석 변경 모드일 때만 빈자리 클릭 가능
-                    is_disabled = not st.session_state.change_mode
-                    if st.button(f"{idx}", key=f"{key_p}_{idx}", disabled=is_disabled):
-                        if not user_name: st.sidebar.error("이름!")
+                    # [수정] 버튼 클릭 잠금 해제: 빈자리는 항상 클릭 가능
+                    if st.button(f"{idx}", key=f"{key_p}_{idx}"):
+                        if not user_name: st.sidebar.error("이름부터 입력하세요!")
                         else:
                             st.session_state.occupied_error = False
                             res = requests.get(GAS_URL, params={"seat_no": idx, "owner": user_name})
                             if res.text == "Occupied":
                                 st.session_state.occupied_error = True
                             else:
-                                st.session_state.change_mode = False # 변경 성공 시 모드 해제
                                 st.balloons()
                             st.rerun()
                 else:
-                    # 이미 배정된 좌석은 클릭 불가 (본인 자리 포함)
+                    # 예약된 자리는 초록색으로 표시
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
         draw_seat(cols[c], l_idx, "L")
