@@ -18,7 +18,7 @@ st.markdown("""
     
     /* [핵심] 버튼을 '와이드 직사각형'으로 만드는 설정 */
     .stButton > button {
-        width: 100% !important;   /* 옆 칸 침범 방지를 위해 100% 고정 */
+        width: 200% !important;   /* 옆 칸 침범 방지를 위해 100% 고정 */
         height: 22px !important;  /* 높이를 낮춰서 상대적으로 가로가 길어 보이게 함 */
         padding: 0px !important;
         font-size: 8px !important; /* 이름 3자가 딱 맞게 들어가는 크기 */
