@@ -5,7 +5,7 @@ import requests
 import time
 
 # 1. 페이지 설정
-st.set_page_config(page_title="즐거운 자리 배치~~", layout="wide")
+st.set_page_config(page_title="자리 배치 티켓팅!!!", layout="wide")
 
 # CSS 디자인 (모니터, 교탁, 출입문 위치 완벽 재현)
 st.markdown("""
