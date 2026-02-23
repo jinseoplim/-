@@ -4,9 +4,9 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="자리 배치~~", layout="wide")
+st.set_page_config(page_title="209호 자리 배치~~", layout="wide")
 
-# [디자인] 기존 설정 유지 및 타이틀 중앙 정렬 CSS 추가
+# [디자인] 기존 설정 유지, 교탁 위치 정밀 조정 및 강아지 스타일
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
@@ -16,11 +16,12 @@ st.markdown("""
     /* 타이틀 중앙 정렬 */
     .centered-title {
         text-align: center;
-        font-size: 3rem;
+        font-size: 2.8rem;
         font-weight: 700;
         margin-bottom: 1rem;
     }
 
+    /* 좌석 버튼 규격 통일 (45px 높이 직사각형) */
     .stButton > button {
         width: 150% !important; 
         height: 45px !important; 
@@ -37,23 +38,31 @@ st.markdown("""
         border: 1px solid #444 !important;
     }
 
+    /* 예약 완료 초록색 버튼 */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
         border: none !important;
     }
 
+    /* 노란색 구조물 (모니터, 교탁, 출입문) */
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
-    .monitor { height: 30px; font-size: 16px; width: 80%; margin: 0 auto 15px auto; }
-    .desk { height: 45px; font-size: 12px; width: 110px; margin-left: auto; line-height: 1.2; margin-bottom: 10px; }
+    .monitor { height: 30px; font-size: 16px; width: 85%; margin: 0 auto 15px auto; }
+    
+    /* [수정] 교탁: 위치 정렬을 위해 고정 너비를 제거하고 100% 사용 */
+    .desk { height: 65px; font-size: 14px; width: 100%; line-height: 1.2; margin-bottom: 10px; }
+    
     .door { height: 40px; font-size: 12px; width: 100%; }
+
+    /* 강아지 이모지 스타일 */
+    .doggy { font-size: 22px; text-align: center; margin: 5px 0; }
     </style>
     """, unsafe_allow_html=True)
 
-# [수정] 타이틀 중앙 정렬 적용
-st.markdown("<h1 class='centered-title'>209호 즐거운 자리 배치~~</h1>", unsafe_allow_html=True)
+# 타이틀 중앙 정렬 및 강아지 배치
+st.markdown("<h1 class='centered-title'>🐶 209호 즐거운 자리 배치 🐶</h1>", unsafe_allow_html=True)
 
-# 2. 데이터 로드 및 nan 박멸
+# 2. 데이터 로드 (nan 박멸)
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -85,7 +94,7 @@ if st.sidebar.button("🔄 실시간 현황 새로고침"):
     st.session_state.occupied_error = False
     st.rerun()
 
-# 배정 확인 및 안내 문구 노출
+# 배정 확인 로직 (진섭 님의 최신 요청에 따라 취소 버튼은 제거 상태 유지)
 my_seat_row = df[df['owner'] == user_name]
 has_seat = not my_seat_row.empty and user_name != ""
 
@@ -96,11 +105,18 @@ if has_seat:
 else:
     if user_name != "":
         st.sidebar.warning("📍 아직 배정된 좌석이 없습니다.")
+st.sidebar.markdown("<div class='doggy'>🐕 🐾 🐩</div>", unsafe_allow_html=True)
 
 # 4. 강의실 레이아웃 시각화
 st.markdown("<div class='yellow-box monitor'>모니터 (정면)</div>", unsafe_allow_html=True)
-c_l, c_s, c_r = st.columns([6, 0.5, 6])
-with c_r: st.markdown("<div class='yellow-box desk'>👨‍🏫<br>교수님 교탁</div>", unsafe_allow_html=True)
+
+# [핵심 수정] 교탁을 16번, 17번 자리 정면에 배치
+# 좌석과 동일한 [1*6, 1.0(통로), 1*6] 컬럼 구조를 사용
+desk_row = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
+# 우측 블록의 4번째(16번), 5번째(17번) 칸 위에 교탁을 걸치게 배치
+with desk_row[10]: 
+    # width를 210%로 설정하여 10번과 11번 컬럼(16/17번 위)에 걸치도록 함
+    st.markdown("<div class='yellow-box desk' style='width: 215% !important; margin-left: -50%;'>👨‍🏫 교수님 교탁<br>(feat. 🐶 조교)</div>", unsafe_allow_html=True)
 st.write("")
 
 # 5. 좌석 배치 (도면 일치 로직)
@@ -139,8 +155,9 @@ for r in range(6):
         draw_seat(cols[c], l_idx, "L")
         draw_seat(cols[c+7], r_idx, "R")
 
-# 6. 하단 출입문
+# 6. 하단 출입문 및 강아지
 st.write("")
-d1, d2, d3 = st.columns([2, 9, 2])
-with d1: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
-with d3: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
+d_cols = st.columns([2, 9, 2])
+with d_cols[0]: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
+with d_cols[1]: st.markdown("<div class='doggy'>🐕‍🦺....🐾....🐕</div>", unsafe_allow_html=True)
+with d_cols[2]: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
