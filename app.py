@@ -4,15 +4,16 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="좌석 배치~~", layout="wide")
+st.set_page_config(page_title="즐거운 좌석 배치~~", layout="wide")
 
-# [디자인] 진섭 님의 기존 설정을 100% 유지
+# [디자인] 모든 버튼 규격 통일 및 사이드바 버튼 중앙 정렬 CSS
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
     [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 1px !important; }
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
 
+    /* 모든 좌석 버튼 규격 통일 (45px 높이 직사각형) */
     .stButton > button {
         width: 150% !important; 
         height: 45px !important; 
@@ -29,6 +30,18 @@ st.markdown("""
         border: 1px solid #444 !important;
     }
 
+    /* 사이드바 내부 버튼들 중앙 정렬 설정 */
+    [data-testid="stSidebar"] .stButton {
+        display: flex;
+        justify-content: center;
+    }
+    
+    /* 사이드바 '좌석 변경하기' 버튼 전용 (너비 조절 가능) */
+    [data-testid="stSidebar"] .stButton > button {
+        width: 80% !important; /* 중앙 정렬 느낌을 위해 너비를 80%로 설정 */
+    }
+
+    /* 예약된 초록색 칸 */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
@@ -79,7 +92,7 @@ if st.sidebar.button("🔄 실시간 현황 새로고침"):
     st.session_state.change_mode = False
     st.rerun()
 
-# 배정 확인 및 변경 로직 (취소 기능 삭제됨)
+# [핵심 로직] 배정 확인 및 변경 모드 제어
 my_seat_row = df[df['owner'] == user_name]
 has_seat = not my_seat_row.empty and user_name != ""
 
@@ -87,15 +100,17 @@ if has_seat:
     my_seat = my_seat_row['seat_no'].values[0]
     st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
     
-    # 배정 취소 버튼을 없애고 변경 버튼만 크게 배치
-    if st.sidebar.button("🔄 좌석 변경하기", use_container_width=True):
+    # 🎯 '좌석 변경하기' 버튼 (중앙 정렬됨)
+    if st.sidebar.button("🔄 좌석 변경하기"):
         st.session_state.change_mode = True
         st.rerun()
     
     if st.session_state.change_mode:
         st.sidebar.info("💡 이동할 새 좌석을 선택하세요.")
+    else:
+        st.sidebar.warning("⚠️ 좌석을 변경하려면 위 버튼을 누르세요.")
 else:
-    # 아직 좌석이 없는 경우엔 변경 모드 상시 활성화
+    # 아직 좌석이 없는 신규 배정자는 버튼 누를 필요 없이 바로 선택 가능
     st.session_state.change_mode = True
 
 # 4. 강의실 레이아웃 시각화
@@ -104,13 +119,13 @@ c_l, c_s, c_r = st.columns([6, 0.5, 6])
 with c_r: st.markdown("<div class='yellow-box desk'>👨‍🏫<br>교수님 교탁</div>", unsafe_allow_html=True)
 st.write("")
 
-# 5. 좌석 배치
+# 5. 좌석 배치 (도면 일치 로직)
 for r in range(6):
     cols = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
     for c in range(6):
         if r == 0:
             l_idx = str(c + 1)
-            r_idx = "X" 
+            r_idx = "X" # 1열 우측 ❌
         else:
             l_idx = str((r-1)*12 + 7 + c)
             r_idx = str((r-1)*12 + 13 + c)
@@ -124,7 +139,7 @@ for r in range(6):
             with column:
                 owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                 if not owner or owner == "":
-                    # 변경 모드일 때만 빈자리 버튼 클릭 가능
+                    # 🔒 좌석 변경 모드일 때만 빈자리 클릭 가능
                     is_disabled = not st.session_state.change_mode
                     if st.button(f"{idx}", key=f"{key_p}_{idx}", disabled=is_disabled):
                         if not user_name: st.sidebar.error("이름!")
@@ -138,7 +153,7 @@ for r in range(6):
                                 st.balloons()
                             st.rerun()
                 else:
-                    # 이미 예약된 자리는 비활성화 (본인 자리 포함)
+                    # 이미 배정된 좌석은 클릭 불가 (본인 자리 포함)
                     st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
         draw_seat(cols[c], l_idx, "L")
