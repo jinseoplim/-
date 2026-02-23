@@ -6,42 +6,43 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="수의대 자리 티켓팅", layout="wide")
 
-# [디자인] 버튼 크기 확대 및 중앙 간격 확보 CSS
+# [디자인] 버튼 높이와 글자 크기를 확실하게 키운 CSS
 st.markdown("""
     <style>
-    /* 가로 배열 강제 유지 및 간격 조정 */
+    /* 가로 배열 유지 및 복도 간격 고정 */
     [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 2px !important; }
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; }
     
-    /* 버튼: 크기를 키우고 가독성 향상 */
+    /* [수정] 버튼: 높이를 65px로, 글자 크기를 12px로 대폭 키웠습니다! */
     .stButton > button {
         width: 100% !important;
-        height: 48px !important; /* 기존 38px에서 대폭 확대 */
+        height: 65px !important; /* 이전 48px에서 더 확대 */
         padding: 0px !important;
-        font-size: 10px !important; /* 버튼이 커진 만큼 글자도 살짝 확대 */
-        font-weight: bold !important;
+        font-size: 12px !important; /* 글자 크기 확대 */
+        font-weight: 800 !important; /* 글자 굵게 */
         line-height: 1 !important;
         white-space: nowrap !important;
+        border-radius: 6px !important; /* 모서리 살짝 둥글게 */
     }
     
-    /* 예약 완료 초록색 버튼 */
+    /* 예약 완료 버튼 (초록색) */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
-        border: none;
+        border: 2px solid #1e7e34;
     }
 
     /* 노란색 구조물 디자인 */
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
-    .monitor { height: 35px; font-size: 16px; width: 70%; margin: 0 auto 20px auto; }
-    .desk { height: 50px; font-size: 13px; width: 140px; margin-left: auto; line-height: 1.2; margin-bottom: 15px; }
-    .door { height: 50px; font-size: 13px; width: 100%; }
+    .monitor { height: 40px; font-size: 18px; width: 80%; margin: 0 auto 20px auto; }
+    .desk { height: 60px; font-size: 14px; width: 150px; margin-left: auto; line-height: 1.2; margin-bottom: 20px; }
+    .door { height: 60px; font-size: 14px; width: 100%; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🏥 수의대 2학년 자리 배치")
 
-# 2. 구글 시트 데이터 로드
+# 2. 구글 시트 연결
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -55,7 +56,7 @@ def get_data():
 
 df = get_data()
 
-# 3. 사이드바 - 인증 및 관리
+# 3. 사이드바 - 본인 인증
 user_name = st.sidebar.text_input("성함 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
@@ -74,14 +75,14 @@ if not my_seat_row.empty and user_name != "":
 # 4. 강의실 레이아웃 시각화
 st.markdown("<div class='yellow-box monitor'>모니터</div>", unsafe_allow_html=True)
 
-# 교탁 배치 (간격 조정을 위해 컬럼 비율 수정)
-c_l, c_s, c_r = st.columns([6, 1.0, 6]) # 중앙 간격을 1.0으로 대폭 확대
+# 교탁 (복도 간격 1.0 유지)
+c_l, c_s, c_r = st.columns([6, 1.0, 6])
 with c_r: st.markdown("<div class='yellow-box desk'>👨‍🏫<br>교수님 교탁</div>", unsafe_allow_html=True)
 st.write("")
 
-# 5. 좌석 배치 및 예약 로직
+# 5. 좌석 배치 (1~66번)
 for r in range(6):
-    # 중앙 복도 간격(0.2 -> 1.0)을 시원하게 넓혔습니다.
+    # 중앙 복도 간격 1.0으로 시원하게 유지
     cols = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
     for c in range(6):
         l_idx = str((r * 12) + c + 1)
@@ -110,7 +111,6 @@ for r in range(6):
 
 # 6. 하단 출입문
 st.write("")
-# 출입문 위치도 간격에 맞춰 조정
 d1, d2, d3 = st.columns([2, 9, 2])
 with d1: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
 with d3: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
