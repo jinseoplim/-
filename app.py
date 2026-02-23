@@ -80,7 +80,7 @@ if st.sidebar.button("🔄 실시간 현황 새로고침"):
 my_seat_row = df[df['owner'] == user_name]
 if not my_seat_row.empty and user_name != "":
     my_seat = my_seat_row['seat_no'].values[0]
-    st.sidebar.success(f"✅ {my_seat}번 배정")
+    st.sidebar.success(f"✅ {my_seat}번 좌석 배정됨")
     if st.sidebar.button("❌ 배정 취소하기"):
         with st.spinner('취소 중...'):
             requests.get(GAS_URL, params={"owner": user_name})
