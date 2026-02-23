@@ -116,7 +116,7 @@ desk_row = st.columns([1,1,1,1,1,1, 1.0, 1,1,1,1,1,1])
 # 우측 블록의 4번째(16번), 5번째(17번) 칸 위에 교탁을 걸치게 배치
 with desk_row[10]: 
     # width를 210%로 설정하여 10번과 11번 컬럼(16/17번 위)에 걸치도록 함
-    st.markdown("<div class='yellow-box desk' style='width: 215% !important; margin-left: -50%;'>👨‍🏫 교수님 교탁<br>(feat. 🐶 조교)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='yellow-box desk' style='width: 215% !important; margin-left: -50%;'>👨‍🏫 교수님 교탁</div>", unsafe_allow_html=True)
 st.write("")
 
 # 5. 좌석 배치 (도면 일치 로직)
