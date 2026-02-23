@@ -15,7 +15,7 @@ st.markdown("""
 
     /* 모든 버튼 규격 통일: 이름이 있든 없든 무조건 똑같은 직사각형 */
     .stButton > button {
-        width: 200% !important;
+        width: 100% !important;
         height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
