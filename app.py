@@ -6,22 +6,16 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="206호 자리 배치", layout="wide")
 
-# [디자인] 좌석 버튼 가로 크기 확대 및 기존 스타일 유지
+# [디자인] 사이드바 버튼 복구 및 좌석 간격 확대 CSS
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
-    [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 1px !important; }
+    
+    /* [수정] 좌석 사이 가로 간격을 1px -> 12px로 확대 */
+    [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 12px !important; }
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
 
-    /* 타이틀 중앙 정렬 */
-    .centered-title {
-        text-align: center;
-        font-size: 2.8rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
-
-    /* [수정] 좌석 버튼 규격: 가로 너비를 150% -> 180%로 확대 */
+    /* 좌석 버튼 규격 (메인 화면용) */
     .stButton > button {
         width: 220% !important; 
         height: 45px !important; 
@@ -36,6 +30,17 @@ st.markdown("""
         white-space: nowrap !important;
         border-radius: 4px !important;
         border: 1px solid #444 !important;
+        /* [추가] 좌석 사이 세로 간격을 위해 하단 여백 추가 */
+        margin-bottom: 8px !important;
+    }
+
+    /* [핵심 수정] 사이드바 내 버튼들은 원래 크기로 복구 */
+    [data-testid="stSidebar"] .stButton > button {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0px !important;
+        max-height: none !important;
+        padding: 0.5rem 1rem !important;
     }
 
     /* 예약 완료 초록색 버튼 */
@@ -49,18 +54,15 @@ st.markdown("""
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
     
     /* 정면 박스: 너비를 20%로 유지하고 중앙 정렬 */
-    .monitor { height: 30px; font-size: 16px; width: 20%; margin: 0 auto 15px auto; }
+    .monitor { height: 35px; font-size: 16px; width: 20%; margin: 0 auto 20px auto; }
     
     /* 교탁 스타일 */
-    .desk { height: 60px; font-size: 14px; width: 100%; line-height: 1.2; margin-bottom: 10px; }
-    
-    /* 강아지 이모지 스타일 */
-    .doggy { font-size: 22px; text-align: center; margin: 5px 0; white-space: nowrap; }
+    .desk { height: 60px; font-size: 14px; width: 100%; line-height: 1.2; margin-bottom: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
 # 타이틀 중앙 정렬
-st.markdown("<h1 class='centered-title'>206호 자리 배치</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; font-size: 2.8rem; font-weight: 700; margin-bottom: 1rem;'>206호 자리 배치</h1>", unsafe_allow_html=True)
 
 # 2. 데이터 로드 (실시간 반영 및 nan 방지)
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
