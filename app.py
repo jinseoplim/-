@@ -6,7 +6,7 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="206호 자리 배치", layout="wide")
 
-# [디자인] 모든 요소 중앙 정렬 및 기존 스타일 유지
+# [디자인] '정면' 박스 크기 조절 및 레이아웃 최적화
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
@@ -47,19 +47,19 @@ st.markdown("""
 
     /* 노란색 구조물 스타일 */
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
-    .monitor { height: 30px; font-size: 16px; width: 100%; margin-bottom: 15px; }
+    
+    /* [수정] 정면 박스: 너비를 60%로 줄이고 중앙 정렬 */
+    .monitor { height: 30px; font-size: 16px; width: 60%; margin: 0 auto 15px auto; }
     
     /* 교탁 스타일 */
     .desk { height: 60px; font-size: 14px; width: 100%; line-height: 1.2; margin-bottom: 10px; }
     
-    .door { height: 40px; font-size: 12px; width: 100%; }
-
     /* 강아지 이모지 스타일 */
     .doggy { font-size: 22px; text-align: center; margin: 5px 0; white-space: nowrap; }
     </style>
     """, unsafe_allow_html=True)
 
-# 타이틀 중앙 정렬 및 강아지 배치
+# 타이틀 중앙 정렬
 st.markdown("<h1 class='centered-title'>206호 자리 배치</h1>", unsafe_allow_html=True)
 
 # 2. 데이터 로드 (실시간 반영 및 nan 방지)
@@ -111,22 +111,19 @@ else:
 layout_cols = st.columns([1, 14, 1])
 
 with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
-    # 4. 강의실 구조물 (모니터)
+    # 4. 강의실 구조물 (정면)
     st.markdown("<div class='yellow-box monitor'>정면</div>", unsafe_allow_html=True)
 
-    # [수정] 교탁 위치: 새 도면 기준 5-통로-5 구조에서 우측 블록 위 정렬
-    # 전체 비율: 좌측5(1*5), 통로(1.0), 우측5(1*5) -> 총 11칸 기준
+    # 교탁 위치 (5-통로-5 구조 유지)
     desk_row = st.columns([1,1,1,1,1, 1.0, 1,1,1,1,1])
-    # 우측 블록 중간(8번 자리 정면 쯤)에 교탁 배치
     with desk_row[8]: 
         st.markdown("<div class='yellow-box desk' style='width: 200% !important; margin-left: -50%;'>교탁</div>", unsafe_allow_html=True)
     st.write("")
 
-    # 5. 좌석 배치 (도면 일치 로직: 5-통로-5)
+    # 5. 좌석 배치 (5-통로-5)
     for r in range(6):
         cols = st.columns([1,1,1,1,1, 1.0, 1,1,1,1,1])
         for c in range(5):
-            # 새 번호 체계: r=0일 때 1~5 / 6~10
             l_idx = str((r * 10) + c + 1)
             r_idx = str((r * 10) + c + 6)
             
@@ -151,8 +148,5 @@ with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
             draw_seat(cols[c], l_idx, "L")
             draw_seat(cols[c+6], r_idx, "R")
 
-    # 6. 하단 출입문 및 강아지 일렬 정렬
+    # [수정] 6. 하단 출입문 삭제 (전체 섹션 삭제됨)
     st.write("")
-    d_cols = st.columns([5, 1, 5]) # 좌석 블록 비율과 맞춤
-    with d_cols[0]: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
-    with d_cols[2]: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
