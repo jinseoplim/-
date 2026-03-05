@@ -6,65 +6,78 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="206호 자리 배치", layout="wide")
 
-# [디자인] 사이드바 버튼 복구 및 좌석 간격 확대 CSS
+# [디자인] 버튼 중심 고정 및 글자 수에 따른 밀림 방지 CSS
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
     
-    /* [수정] 좌석 사이 가로 간격을 1px -> 12px로 확대 */
-    [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 80px !important; }
-    [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
+    /* [수정] 좌석 사이 간격 조절 및 중심 고정 */
+    [data-testid="stHorizontalBlock"] { 
+        flex-wrap: nowrap !important; 
+        gap: 15px !important; /* 너무 넓었던 gap을 적절히 조절 */
+        justify-content: center !important; 
+    }
+    
+    [data-testid="column"] { 
+        flex: 1 1 0% !important; 
+        min-width: 0px !important; 
+        padding: 0px !important;
+        display: flex !important;
+        justify-content: center !important; /* 컬럼 자체의 중심을 고정 */
+    }
 
-    /* 좌석 버튼 규격 (메인 화면용) */
+    /* [핵심 수정] 좌석 버튼: 너비를 100%로 고정하되, 컬럼 너비 안에서만 존재하게 함 */
+    .stButton {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
     .stButton > button {
-        width: 250% !important; 
+        width: 140px !important; /* 버튼의 절대적인 가로 길이를 고정 (밀림 방지 핵심) */
         height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        padding: 0px !important;
+        padding: 0px 5px !important;
         font-size: 11px !important;
         font-weight: 700 !important;
+        
+        /* 글자가 길어질 경우 상자가 늘어나는 대신 말줄임표 처리 */
         white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        
         border-radius: 4px !important;
         border: 1px solid #444 !important;
-        /* [추가] 좌석 사이 세로 간격을 위해 하단 여백 추가 */
         margin-bottom: 8px !important;
     }
 
-    /* [핵심 수정] 사이드바 내 버튼들은 원래 크기로 복구 */
+    /* 사이드바 버튼 복구 */
     [data-testid="stSidebar"] .stButton > button {
         width: 100% !important;
         height: auto !important;
         min-height: 0px !important;
-        max-height: none !important;
         padding: 0.5rem 1rem !important;
     }
 
-    /* 예약 완료 초록색 버튼 */
     div.stButton > button[kind="primary"] {
         background-color: #28a745 !important;
         color: white !important;
         border: none !important;
     }
 
-    /* 노란색 구조물 스타일 */
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
-    
-    /* 정면 박스: 너비를 20%로 유지하고 중앙 정렬 */
     .monitor { height: 35px; font-size: 16px; width: 20%; margin: 0 auto 20px auto; }
-    
-    /* 교탁 스타일 */
     .desk { height: 60px; font-size: 14px; width: 100%; line-height: 1.2; margin-bottom: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 타이틀 중앙 정렬
 st.markdown("<h1 style='text-align: center; font-size: 2.8rem; font-weight: 700; margin-bottom: 1rem;'>206호 자리 배치</h1>", unsafe_allow_html=True)
 
-# 2. 데이터 로드 (실시간 반영 및 nan 방지)
+# 2. 데이터 로드
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -77,11 +90,10 @@ def get_clean_data():
 
 df = get_clean_data()
 
-# 상태 관리
 if 'occupied_error' not in st.session_state:
     st.session_state.occupied_error = False
 
-# 3. 사이드바 인터페이스
+# 3. 사이드바
 user_name = st.sidebar.text_input("이름 입력", placeholder="예: 임진섭")
 GAS_URL = "https://script.google.com/macros/s/AKfycbwIyemiDDz0BKptG5z5IWtvtn6aQNiXv0qTZRWWACntR_g3DOqZ7Ix6uXvpmzTuLJf9aQ/exec"
 
@@ -95,7 +107,6 @@ if st.sidebar.button("🔄 실시간 현황 새로고침"):
     st.session_state.occupied_error = False
     st.rerun()
 
-# 배정 확인 알림
 my_seat_row = df[df['owner'] == user_name]
 has_seat = not my_seat_row.empty and user_name != ""
 
@@ -113,16 +124,14 @@ else:
 layout_cols = st.columns([1, 14, 1])
 
 with layout_cols[1]: 
-    # 4. 강의실 구조물 (정면)
     st.markdown("<div class='yellow-box monitor'>모니터</div>", unsafe_allow_html=True)
 
-    # 교탁 위치
     desk_row = st.columns([1,1,1,1,1, 1.0, 1,1,1,1,1])
     with desk_row[8]: 
         st.markdown("<div class='yellow-box desk' style='width: 200% !important; margin-left: -50%;'>교탁</div>", unsafe_allow_html=True)
     st.write("")
 
-    # 5. 좌석 배치 (5-통로-5)
+    # 5. 좌석 배치
     for r in range(6):
         cols = st.columns([1,1,1,1,1, 1.0, 1,1,1,1,1])
         for c in range(5):
@@ -145,6 +154,7 @@ with layout_cols[1]:
                                     st.balloons()
                                 st.rerun()
                     else:
+                        # 본인 좌석만 초록색(primary), 나머지는 이름 표시
                         st.button(f"{owner}", key=f"{key_p}_{idx}", type="primary", disabled=(owner != user_name))
 
             draw_seat(cols[c], l_idx, "L")
