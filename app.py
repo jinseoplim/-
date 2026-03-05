@@ -60,7 +60,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # 타이틀 중앙 정렬 및 강아지 배치
-st.markdown("<h1 class='centered-title'>🐶 206호 자리 배치 🐶</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='centered-title'>206호 자리 배치</h1>", unsafe_allow_html=True)
 
 # 2. 데이터 로드 (실시간 반영 및 nan 방지)
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
@@ -104,7 +104,6 @@ if has_seat:
 else:
     if user_name != "":
         st.sidebar.warning("📍 아직 배정된 좌석이 없습니다.")
-st.sidebar.markdown("<div class='doggy'>🐕 🐾 🐩</div>", unsafe_allow_html=True)
 
 # ==============================================================================
 # 메인 콘텐츠 중앙 정렬 레이아웃
@@ -120,7 +119,7 @@ with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
     desk_row = st.columns([1,1,1,1,1, 1.0, 1,1,1,1,1])
     # 우측 블록 중간(8번 자리 정면 쯤)에 교탁 배치
     with desk_row[8]: 
-        st.markdown("<div class='yellow-box desk' style='width: 200% !important; margin-left: -50%;'>👨‍🏫 교수님</div>", unsafe_allow_html=True)
+        st.markdown("<div class='yellow-box desk' style='width: 200% !important; margin-left: -50%;'>교탁</div>", unsafe_allow_html=True)
     st.write("")
 
     # 5. 좌석 배치 (도면 일치 로직: 5-통로-5)
@@ -156,5 +155,4 @@ with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
     st.write("")
     d_cols = st.columns([5, 1, 5]) # 좌석 블록 비율과 맞춤
     with d_cols[0]: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
-    with d_cols[1]: st.markdown("<div class='doggy'>🐕‍🦺.......🐾.......🐕</div>", unsafe_allow_html=True)
     with d_cols[2]: st.markdown("<div class='yellow-box door'>출입문</div>", unsafe_allow_html=True)
