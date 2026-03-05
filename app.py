@@ -17,7 +17,7 @@ st.markdown("""
 
     /* 좌석 버튼 규격 (메인 화면용) */
     .stButton > button {
-        width: 400% !important; 
+        width: 250% !important; 
         height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
