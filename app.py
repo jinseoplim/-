@@ -112,7 +112,7 @@ layout_cols = st.columns([1, 14, 1])
 
 with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
     # 4. 강의실 구조물 (정면)
-    st.markdown("<div class='yellow-box monitor'>정면</div>", unsafe_allow_html=True)
+    st.markdown("<div class='yellow-box monitor'>모니터</div>", unsafe_allow_html=True)
 
     # 교탁 위치 (5-통로-5 구조 유지)
     desk_row = st.columns([1,1,1,1,1, 1.0, 1,1,1,1,1])
