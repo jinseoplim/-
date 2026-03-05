@@ -12,12 +12,12 @@ st.markdown("""
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
     
     /* [수정] 좌석 사이 가로 간격을 1px -> 12px로 확대 */
-    [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 40px !important; }
+    [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 80px !important; }
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px !important; }
 
     /* 좌석 버튼 규격 (메인 화면용) */
     .stButton > button {
-        width: 220% !important; 
+        width: 400% !important; 
         height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
