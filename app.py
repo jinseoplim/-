@@ -23,7 +23,7 @@ st.markdown("""
 
     /* [수정] 좌석 버튼 규격: 가로 너비를 150% -> 180%로 확대 */
     .stButton > button {
-        width: 180% !important; 
+        width: 220% !important; 
         height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
