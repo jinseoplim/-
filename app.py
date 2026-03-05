@@ -6,7 +6,7 @@ import requests
 # 1. 페이지 설정
 st.set_page_config(page_title="206호 자리 배치", layout="wide")
 
-# [디자인] '정면' 박스 크기 조절 및 레이아웃 최적화
+# [디자인] 좌석 버튼 가로 크기 확대 및 기존 스타일 유지
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { padding: 0.5rem 0.1rem !important; }
@@ -21,9 +21,9 @@ st.markdown("""
         margin-bottom: 1rem;
     }
 
-    /* 좌석 버튼 규격 (45px 높이 직사각형) */
+    /* [수정] 좌석 버튼 규격: 가로 너비를 150% -> 180%로 확대 */
     .stButton > button {
-        width: 150% !important; 
+        width: 180% !important; 
         height: 45px !important; 
         min-height: 45px !important;
         max-height: 45px !important;
@@ -48,7 +48,7 @@ st.markdown("""
     /* 노란색 구조물 스타일 */
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
     
-    /* [수정] 정면 박스: 너비를 60%로 줄이고 중앙 정렬 */
+    /* 정면 박스: 너비를 20%로 유지하고 중앙 정렬 */
     .monitor { height: 30px; font-size: 16px; width: 20%; margin: 0 auto 15px auto; }
     
     /* 교탁 스타일 */
@@ -110,11 +110,11 @@ else:
 # ==============================================================================
 layout_cols = st.columns([1, 14, 1])
 
-with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
+with layout_cols[1]: 
     # 4. 강의실 구조물 (정면)
     st.markdown("<div class='yellow-box monitor'>모니터</div>", unsafe_allow_html=True)
 
-    # 교탁 위치 (5-통로-5 구조 유지)
+    # 교탁 위치
     desk_row = st.columns([1,1,1,1,1, 1.0, 1,1,1,1,1])
     with desk_row[8]: 
         st.markdown("<div class='yellow-box desk' style='width: 200% !important; margin-left: -50%;'>교탁</div>", unsafe_allow_html=True)
@@ -128,7 +128,7 @@ with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
             r_idx = str((r * 10) + c + 6)
             
             def draw_seat(column, idx, key_p):
-                if int(idx) > 60: return # 최대 60석
+                if int(idx) > 60: return 
                 with column:
                     owner = df[df['seat_no'] == idx]['owner'].values[0] if not df[df['seat_no'] == idx].empty else ""
                     if not owner or owner == "":
@@ -148,5 +148,4 @@ with layout_cols[1]: # 가운데 컬럼에 메인 콘텐츠 집중
             draw_seat(cols[c], l_idx, "L")
             draw_seat(cols[c+6], r_idx, "R")
 
-    # [수정] 6. 하단 출입문 삭제 (전체 섹션 삭제됨)
     st.write("")
