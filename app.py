@@ -49,7 +49,7 @@ st.markdown("""
     .yellow-box { text-align: center; background-color: #fceea7; color: black; font-weight: bold; border: 1px solid #000; display: flex; align-items: center; justify-content: center; }
     
     /* [수정] 정면 박스: 너비를 60%로 줄이고 중앙 정렬 */
-    .monitor { height: 30px; font-size: 16px; width: 30%; margin: 0 auto 15px auto; }
+    .monitor { height: 30px; font-size: 16px; width: 20%; margin: 0 auto 15px auto; }
     
     /* 교탁 스타일 */
     .desk { height: 60px; font-size: 14px; width: 100%; line-height: 1.2; margin-bottom: 10px; }
