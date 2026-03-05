@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="209호 자리 배치~~", layout="wide")
+st.set_page_config(page_title="206호 자리 배치", layout="wide")
 
 # [디자인] 모든 요소 중앙 정렬 및 기존 스타일 유지
 st.markdown("""
@@ -60,7 +60,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # 타이틀 중앙 정렬 및 강아지 배치
-st.markdown("<h1 class='centered-title'>🐶 209호 즐거운 자리 배치 🐶</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='centered-title'>🐶 206호 자리 배치 🐶</h1>", unsafe_allow_html=True)
 
 # 2. 데이터 로드 (실시간 반영 및 nan 방지)
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
