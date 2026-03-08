@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 
 # 1. 페이지 설정
-st.set_page_config(page_title="206호 자리 배치", layout="wide")
+st.set_page_config(page_title="자리 배치ㅜㅜ", layout="wide")
 
 # [디자인] 버튼 중심 고정 및 글자 수에 따른 밀림 방지 CSS
 st.markdown("""
@@ -75,7 +75,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align: center; font-size: 2.8rem; font-weight: 700; margin-bottom: 1rem;'>206호 자리 배치</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; font-size: 2.8rem; font-weight: 700; margin-bottom: 1rem;'>두 번째 자리 배치</h1>", unsafe_allow_html=True)
 
 # 2. 데이터 로드
 url = "https://docs.google.com/spreadsheets/d/1_-b2IWVEQle2NirUEFIN38gm3-Vpytu_z-dcNYoP32I/edit#gid=0"
